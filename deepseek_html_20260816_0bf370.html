@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔥 EPIC QUEST · Task Tracker</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 48px;
+            box-shadow: 0 20px 50px rgba(255, 107, 107, 0.15), 0 8px 20px rgba(255, 107, 107, 0.10);
+            padding: 2rem 1.8rem;
+            border: 2px solid rgba(255, 107, 107, 0.2);
+        }
+
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 2.1rem;
+            letter-spacing: -0.02em;
+            color: #c0392b;
+            margin-bottom: 0.25rem;
+        }
+
+        h1 i {
+            color: #ff6b6b;
+            font-size: 2rem;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stats {
+            display: flex;
+            gap: 24px;
+            background: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.1);
+            border: 2px solid #ffd4d4;
+        }
+
+        .stats span {
+            font-weight: 600;
+            color: #c0392b;
+        }
+
+        .stats .count {
+            background: #ff6b6b;
+            color: white;
+            padding: 0 12px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 14px;
+            background: #ffd4d4;
+            border-radius: 20px;
+            margin: 1.2rem 0 2rem 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(255, 107, 107, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff6b6b, #ff4757, #ff6348);
+            border-radius: 20px;
+            transition: width 0.6s ease;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #ffd4d4;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.06);
+            user-select: none;
+        }
+
+        .section-header:hover {
+            border-color: #ff6b6b;
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.15);
+            transform: scale(1.01);
+        }
+
+        .section-header .left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .section-header .left i {
+            color: #ff6b6b;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .section-header .left .title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #c0392b;
+        }
+
+        .section-header .left .task-count {
+            background: #ffe0e0;
+            padding: 0.1rem 0.8rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            color: #c0392b;
+            font-weight: 500;
+        }
+
+        .section-header .right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header .right .status-badge {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.8rem;
+            border-radius: 40px;
+            background: #ffe0e0;
+            color: #c0392b;
+        }
+
+        .section-header .right .status-badge.done {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .section-header .right i {
+            color: #ff8a8a;
+            transition: transform 0.3s ease;
+        }
+
+        .section-header .right i.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0.8rem 0.5rem 0.5rem 0.5rem;
+            overflow: hidden;
+            max-height: 5000px;
+            transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+            opacity: 1;
+        }
+
+        .task-list.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 0.5rem;
+            pointer-events: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.04);
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 107, 107, 0.08);
+        }
+
+        .task-item:hover {
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.12);
+            border-color: #ffb3b3;
+            transform: scale(1.01);
+        }
+
+        .task-item .check {
+            width: 28px;
+            height: 28px;
+            border-radius: 40px;
+            border: 2px solid #ffb3b3;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+            flex-shrink: 0;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .task-item .check:hover {
+            transform: scale(1.15) rotate(10deg);
+            border-color: #ff6b6b;
+        }
+
+        .task-item .check.completed {
+            background: #ff6b6b;
+            border-color: #ff6b6b;
+            animation: celebrateCheck 0.5s ease;
+        }
+
+        @keyframes celebrateCheck {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.3) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        .task-item .check i {
+            opacity: 0;
+            transition: 0.2s;
+        }
+
+        .task-item .check.completed i {
+            opacity: 1;
+        }
+
+        .task-item .task-text {
+            flex: 1;
+            font-weight: 500;
+            color: #2d1b1b;
+            word-break: break-word;
+            font-size: 0.9rem;
+        }
+
+        .task-item .task-text.done-text {
+            text-decoration: line-through;
+            color: #ff8a8a;
+        }
+
+        .archive-section {
+            margin-top: 2.8rem;
+            border-top: 3px dashed #ffd4d4;
+            padding-top: 2rem;
+        }
+
+        .archive-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #c0392b;
+            margin-bottom: 1rem;
+        }
+
+        .archive-title i {
+            color: #ff6b6b;
+        }
+
+        .archive-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 1.5rem;
+            border-radius: 40px;
+            min-height: 70px;
+            border: 1px solid rgba(255, 107, 107, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .archive-badge {
+            background: white;
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #c0392b;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #ffd4d4;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .archive-badge i {
+            color: #ff6b6b;
+            font-size: 0.7rem;
+        }
+
+        .empty-archive {
+            color: #ff8a8a;
+            font-style: italic;
+            padding: 0.5rem 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .celebrate-btn {
+            background: linear-gradient(135deg, #ff6b6b, #ff4757);
+            border: none;
+            color: white;
+            padding: 0.7rem 2.2rem;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4); }
+            50% { box-shadow: 0 4px 40px rgba(255, 107, 107, 0.8); }
+        }
+
+        .celebrate-btn:hover {
+            transform: scale(1.05) rotate(-2deg);
+            box-shadow: 0 8px 40px rgba(255, 107, 107, 0.6);
+        }
+
+        .reset-btn {
+            background: transparent;
+            border: 2px solid #ffd4d4;
+            color: #c0392b;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .reset-btn:hover {
+            background: #ffe0e0;
+            border-color: #ff6b6b;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+
+        .collapse-all-btn {
+            background: transparent;
+            border: 2px solid #ffd4d4;
+            color: #c0392b;
+            padding: 0.4rem 1.2rem;
+            border-radius: 60px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .collapse-all-btn:hover {
+            background: #ffe0e0;
+            border-color: #ff6b6b;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            .task-item {
+                padding: 0.6rem 1rem;
+                gap: 12px;
+            }
+            .task-item .task-text {
+                font-size: 0.85rem;
+            }
+            .stats {
+                gap: 12px;
+                padding: 0.3rem 1rem;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .section-header {
+                padding: 0.6rem 1rem;
+            }
+            .section-header .left .title {
+                font-size: 0.95rem;
+            }
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .archive-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .archive-grid::-webkit-scrollbar-track {
+            background: #ffe0e0;
+            border-radius: 10px;
+        }
+        .archive-grid::-webkit-scrollbar-thumb {
+            background: #ff6b6b;
+            border-radius: 10px;
+        }
+
+        /* Celebration overlay */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            background: radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%);
+            animation: flashOverlay 2s ease-in-out;
+        }
+
+        @keyframes flashOverlay {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="confetti-canvas"></canvas>
+    <div class="container" id="app">
+        <div class="flex-row">
+            <h1>
+                <i class="fas fa-fire"></i>
+                EPIC QUEST
+            </h1>
+            <div class="stats">
+                <span><i class="far fa-circle-check"></i> <span id="done-count">0</span>/<span id="total-count">0</span></span>
+                <span class="count"><i class="fas fa-flag-checkered"></i> <span id="progress-percent">0</span>%</span>
+            </div>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1.2rem;">
+            <button class="collapse-all-btn" id="collapseAllBtn">
+                <i class="fas fa-compress-alt"></i> Collapse all
+            </button>
+        </div>
+
+        <div id="sections-container"></div>
+
+        <div class="button-group">
+            <button class="celebrate-btn" id="celebrateBtn">
+                <i class="fas fa-star"></i> CELEBRATE! 🎉
+            </button>
+            <button class="reset-btn" id="resetBtn">
+                <i class="fas fa-undo-alt"></i> Reset all
+            </button>
+        </div>
+
+        <div class="archive-section">
+            <div class="archive-title">
+                <i class="fas fa-archive"></i> Archive · conquered
+            </div>
+            <div class="archive-grid" id="archive-grid">
+                <span class="empty-archive"><i class="far fa-smile"></i> Nothing archived yet. Go slay some tasks!</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Audio context for generating sounds (no external files needed)
+            let audioCtx = null;
+
+            function playCelebrationSound() {
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+
+                    // Play a dramatic ascending tone sequence
+                    const notes = [523, 659, 784, 1047, 1319, 1568, 2093];
+                    notes.forEach((freq, i) => {
+                        setTimeout(() => {
+                            const osc = audioCtx.createOscillator();
+                            const gain = audioCtx.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.type = 'square';
+                            osc.frequency.value = freq;
+                            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                            osc.start(audioCtx.currentTime);
+                            osc.stop(audioCtx.currentTime + 0.3);
+                        }, i * 150);
+                    });
+
+                    // Add some noise/cymbal at the end
+                    setTimeout(() => {
+                        const bufferSize = audioCtx.sampleRate * 0.2;
+                        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / bufferSize * 3);
+                        }
+                        const noise = audioCtx.createBufferSource();
+                        noise.buffer = buffer;
+                        const gain = audioCtx.createGain();
+                        gain.gain.value = 0.2;
+                        noise.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        noise.start();
+                    }, notes.length * 150 + 100);
+                } catch(e) {
+                    // Silently fail if audio not supported
+                }
+            }
+
+            // SECTIONS with professional icons (Font Awesome)
+            const SECTIONS = [{
+                id: 'google-cloud',
+                icon: 'fa-cloud',
+                title: 'Google Cloud Setup',
+                tasks: [
+                    "Create Google Cloud project",
+                    "Enable Google Sheets API",
+                    "Enable Places API (New)",
+                    "Create service account & download JSON key",
+                    "Create blank Google Sheet & copy Sheet ID",
+                    "Share Sheet with service account email (Editor)",
+                    "Create Google Places API key",
+                    "Fill .env: SHEET_ID, GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_PLACES_API_KEY"
+                ]
+            }, {
+                id: 'sheet-init',
+                icon: 'fa-table',
+                title: 'Sheet Initialization',
+                tasks: [
+                    "Run pnpm install",
+                    "Run pnpm init-sheet",
+                    "Check Sheet: all tabs & seeded data exist"
+                ]
+            }, {
+                id: 'firebase-local',
+                icon: 'fa-fire',
+                title: 'Firebase Local Setup',
+                tasks: [
+                    "Create/select Firebase project & copy Project ID",
+                    "Firebase login (firebase login)",
+                    "firebase init inside functions/ (or copy .firebaserc)",
+                    "Run pnpm functions:serve (emulator boots)",
+                    "Open functions/local-test/requests.http",
+                    "Fire test requests in order (discoverProspects, addManualProspect, …)",
+                    "Confirm test rows appeared in Google Sheet"
+                ]
+            }, {
+                id: 'web-app-local',
+                icon: 'fa-laptop-code',
+                title: 'Web App Local Testing',
+                tasks: [
+                    "Set VITE_FUNCTIONS_BASE_URL in .env to local URL",
+                    "Run pnpm dev & open localhost",
+                    "Test Dashboard loads",
+                    "Test Discovery: search returns results & Sheet updates",
+                    "Test Quick Add: prospect lands in Sheet",
+                    "Test scoring: prospect scored & Sheet updated",
+                    "Test call logging: log call & Sheet updated",
+                    "Test opportunity: create & mark Won → Customer created"
+                ]
+            }, {
+                id: 'external-apis',
+                icon: 'fa-plug',
+                title: 'External APIs (Resend, Apollo, Yelp)',
+                tasks: [
+                    "Create Resend account & API key + verify sender",
+                    "Add RESEND_API_KEY & FROM_EMAIL to .env",
+                    "Create Apollo account & API key → add to .env",
+                    "Create Yelp Developers app & API key → add to .env",
+                    "Test enrichment, Yelp search, cold email locally"
+                ]
+            }, {
+                id: 'deployment',
+                icon: 'fa-rocket',
+                title: 'Deployment (Firebase + GitHub Pages)',
+                tasks: [
+                    "pnpm functions:deploy → copy production Functions URL",
+                    "Add VITE_FUNCTIONS_BASE_URL to GitHub repo secret",
+                    "git add . → commit → git push origin main",
+                    "Check GitHub Actions: workflow succeeds",
+                    "GitHub Pages: Source = GitHub Actions",
+                    "Open live website & test end-to-end",
+                    "Phone: Add to Home Screen / Install PWA"
+                ]
+            }];
+
+            const ALL_TASKS = SECTIONS.flatMap(s => s.tasks);
+            let completed = new Set();
+            const STORAGE_KEY = 'epicQuest_tracker_v3';
+
+            const sectionsContainer = document.getElementById('sections-container');
+            const archiveGrid = document.getElementById('archive-grid');
+            const doneCountSpan = document.getElementById('done-count');
+            const totalCountSpan = document.getElementById('total-count');
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercentSpan = document.getElementById('progress-percent');
+
+            let collapsedSections = new Set();
+
+            function saveState() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    completed: Array.from(completed),
+                    collapsed: Array.from(collapsedSections)
+                }));
+            }
+
+            function loadState() {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    try {
+                        const data = JSON.parse(raw);
+                        completed = new Set(data.completed || []);
+                        collapsedSections = new Set(data.collapsed || []);
+                    } catch (_) {
+                        completed = new Set();
+                        collapsedSections = new Set();
+                    }
+                }
+            }
+
+            function getTaskIndex(taskText) {
+                return ALL_TASKS.indexOf(taskText);
+            }
+
+            // OVER THE TOP CELEBRATION
+            function epicCelebration(intensity = 60) {
+                // Play sound
+                playCelebrationSound();
+                
+                // Flash overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'celebration-overlay';
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 2000);
+
+                // Massive confetti
+                fireConfetti(intensity * 2);
+                
+                // Secondary wave after 0.5s
+                setTimeout(() => fireConfetti(intensity), 500);
+                
+                // Third wave after 1s
+                setTimeout(() => fireConfetti(intensity / 2), 1000);
+                
+                // Create floating emoji/symbols
+                for (let i = 0; i < 15; i++) {
+                    setTimeout(() => {
+                        const el = document.createElement('div');
+                        const symbols = ['⭐', '🔥', '💪', '🚀', '🎯', '⚡', '🎉', '✨'];
+                        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                        el.style.cssText = `
+                            position: fixed;
+                            pointer-events: none;
+                            z-index: 10000;
+                            font-size: ${20 + Math.random() * 40}px;
+                            left: ${Math.random() * 100}%;
+                            top: -50px;
+                            animation: floatUp ${2 + Math.random() * 2}s ease-in forwards;
+                        `;
+                        document.body.appendChild(el);
+                        setTimeout(() => el.remove(), 4000);
+                    }, i * 100);
+                }
+
+                // Add floating animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes floatUp {
+                        0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+                        10% { opacity: 1; transform: translateY(20vh) rotate(20deg) scale(1); }
+                        100% { transform: translateY(-20vh) rotate(720deg) scale(0.2); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            function render() {
+                const total = ALL_TASKS.length;
+                const done = completed.size;
+                const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+                doneCountSpan.textContent = done;
+                totalCountSpan.textContent = total;
+                progressFill.style.width = percent + '%';
+                progressPercentSpan.textContent = percent;
+
+                sectionsContainer.innerHTML = SECTIONS.map((section) => {
+                    const sectionTasks = section.tasks;
+                    const doneInSection = sectionTasks.filter(t => completed.has(getTaskIndex(t))).length;
+                    const totalInSection = sectionTasks.length;
+                    const isDone = doneInSection === totalInSection && totalInSection > 0;
+                    const isCollapsed = collapsedSections.has(section.id);
+
+                    return `
+                        <div class="section" data-section-id="${section.id}">
+                            <div class="section-header" data-action="toggle-section" data-section-id="${section.id}">
+                                <div class="left">
+                                    <i class="fas ${section.icon}"></i>
+                                    <span class="title">${section.title}</span>
+                                    <span class="task-count">${doneInSection}/${totalInSection}</span>
+                                </div>
+                                <div class="right">
+                                    <span class="status-badge ${isDone ? 'done' : ''}">
+                                        ${isDone ? '✓ Done' : `${doneInSection}/${totalInSection}`}
+                                    </span>
+                                    <i class="fas fa-chevron-down ${isCollapsed ? 'collapsed' : ''}"></i>
+                                </div>
+                            </div>
+                            <div class="task-list ${isCollapsed ? 'collapsed' : ''}">
+                                ${sectionTasks.map(taskText => {
+                                    const taskIdx = getTaskIndex(taskText);
+                                    const isCompleted = completed.has(taskIdx);
+                                    return `
+                                        <div class="task-item" data-index="${taskIdx}">
+                                            <div class="check ${isCompleted ? 'completed' : ''}" data-action="toggle" data-index="${taskIdx}">
+                                                <i class="fas fa-check"></i>
+                                            </div>
+                                            <div class="task-text ${isCompleted ? 'done-text' : ''}">${taskText}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const archivedTasks = ALL_TASKS.filter((_, idx) => completed.has(idx));
+                if (archivedTasks.length === 0) {
+                    archiveGrid.innerHTML =
+                    `<span class="empty-archive"><i class="far fa-smile"></i> Nothing archived yet. Go slay some tasks!</span>`;
+                } else {
+                    archiveGrid.innerHTML = archivedTasks.map(text => {
+                        return `<span class="archive-badge"><i class="fas fa-check-circle"></i> ${text}</span>`;
+                    }).join('');
+                }
+
+                document.querySelectorAll('.check[data-action="toggle"]').forEach(el => {
+                    el.removeEventListener('click', handleToggle);
+                    el.addEventListener('click', handleToggle);
+                });
+
+                document.querySelectorAll('.section-header[data-action="toggle-section"]').forEach(el => {
+                    el.removeEventListener('click', handleSectionToggle);
+                    el.addEventListener('click', handleSectionToggle);
+                });
+            }
+
+            function handleToggle(e) {
+                const checkEl = e.currentTarget;
+                const index = parseInt(checkEl.dataset.index, 10);
+                if (isNaN(index)) return;
+
+                if (completed.has(index)) {
+                    completed.delete(index);
+                } else {
+                    completed.add(index);
+                    // Small celebration on each task
+                    fireConfetti(20);
+                    playCelebrationSound();
+                }
+
+                saveState();
+                render();
+                if (completed.size === ALL_TASKS.length) {
+                    // EPIC CELEBRATION for completing everything!
+                    setTimeout(() => epicCelebration(100), 500);
+                }
+            }
+
+            function handleSectionToggle(e) {
+                const header = e.currentTarget;
+                const sectionId = header.dataset.sectionId;
+
+                if (collapsedSections.has(sectionId)) {
+                    collapsedSections.delete(sectionId);
+                } else {
+                    collapsedSections.add(sectionId);
+                }
+
+                saveState();
+                render();
+            }
+
+            // Confetti with more colors (no purple!)
+            function fireConfetti(count = 30) {
+                const canvas = document.getElementById('confetti-canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                const particles = [];
+                const colors = ['#ff6b6b', '#ff4757', '#ff6348', '#ff7f50', '#ffa502', '#ff6348', '#ff4757', '#ff6b81',
+                    '#ff7979', '#f0932b', '#eb4d4b', '#ff5252'
+                ];
+
+                for (let i = 0; i < count; i++) {
+                    const size = Math.random() * 12 + 4;
+                    particles.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height - canvas.height * 0.3,
+                        w: size,
+                        h: size * 0.6,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: Math.random() * 8 + 3,
+                        rot: Math.random() * 360,
+                        rv: (Math.random() - 0.5) * 12,
+                        life: 1.0,
+                        gravity: 0.12 + Math.random() * 0.08,
+                    });
+                }
+
+                let frameId = null;
+                let startTime = performance.now();
+
+                function animate() {
+                    const elapsed = (performance.now() - startTime) / 1000;
+                    if (elapsed > 4.5) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        if (frameId) cancelAnimationFrame(frameId);
+                        return;
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    let alive = false;
+                    for (const p of particles) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.vy += p.gravity;
+                        p.rot += p.rv;
+                        p.life -= 0.005;
+                        if (p.life <= 0) continue;
+                        alive = true;
+                        ctx.save();
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rot * Math.PI / 180);
+                        ctx.globalAlpha = Math.min(p.life, 0.95);
+                        ctx.fillStyle = p.color;
+                        ctx.shadowColor = 'rgba(255,107,107,0.3)';
+                        ctx.shadowBlur = 8;
+                        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                        ctx.restore();
+                    }
+                    if (!alive) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        if (frameId) cancelAnimationFrame(frameId);
+                        return;
+                    }
+                    frameId = requestAnimationFrame(animate);
+                }
+                animate();
+            }
+
+            function resetAll() {
+                if (confirm('🔥 Reset all tasks? This will clear your progress.')) {
+                    completed.clear();
+                    collapsedSections.clear();
+                    saveState();
+                    render();
+                    fireConfetti(20);
+                }
+            }
+
+            function collapseAll() {
+                SECTIONS.forEach(s => collapsedSections.add(s.id));
+                saveState();
+                render();
+            }
+
+            function init() {
+                loadState();
+                render();
+
+                document.getElementById('celebrateBtn').addEventListener('click', () => epicCelebration(60));
+                document.getElementById('resetBtn').addEventListener('click', resetAll);
+                document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
+
+                window.addEventListener('resize', () => {
+                    const canvas = document.getElementById('confetti-canvas');
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
