@@ -1,0 +1,51 @@
+### Peak Empire -- Epic 2 manual test requests
+### Run `pnpm functions:serve` first, then fire these one at a time.
+### Base URL shown assumes the default emulator port/project layout --
+### the real URL is printed in the emulator's terminal output on boot,
+### copy it from there if it differs (format is usually
+### http://127.0.0.1:5001/<project-id>/us-central1/<functionName>).
+
+@baseUrl = http://127.0.0.1:5001/demo-peak-empire/us-central1
+
+### 1. Discover prospects via Google Places
+POST {{baseUrl}}/discoverProspects
+Content-Type: application/json
+
+{
+  "industry": "dog walker",
+  "city": "Calgary",
+  "sources": ["google_places"]
+}
+
+### 2. Add a manual prospect (simulating an Instagram-only business)
+POST {{baseUrl}}/addManualProspect
+Content-Type: application/json
+
+{
+  "businessName": "Test Manual Prospect",
+  "industry": "nail tech",
+  "city": "Calgary",
+  "instagram": "@testprospect"
+}
+
+### 3. Missing-field validation -- should return 400, not 500
+POST {{baseUrl}}/addManualProspect
+Content-Type: application/json
+
+{
+  "businessName": "Missing Industry Co"
+}
+
+### 4. Fetch the computed call queue
+GET {{baseUrl}}/callQueue
+
+### 5. Log a call against a real prospect id from step 4's response
+POST {{baseUrl}}/logCall
+Content-Type: application/json
+
+{
+  "prospectId": "PROS-REPLACE-ME",
+  "outcome": "callback_requested",
+  "summary": "Spoke with owner, busy season, call back after Nov 15",
+  "followUpDate": "2026-11-15"
+}
