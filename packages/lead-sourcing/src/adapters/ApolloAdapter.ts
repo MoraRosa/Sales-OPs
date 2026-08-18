@@ -5,6 +5,16 @@ import type { EnrichmentPort } from "../DiscoveryPort.js";
  * when a prospect is promoted past Qualification and you actually want
  * the owner's name/email. Never batch-call this; Apollo's credit
  * pricing punishes bulk enrichment of prospects you may never call.
+ *
+ * IMPORTANT LIMITATION: Apollo's /people/match endpoint enriches a
+ * specific, already-identified person (matched by name+domain or
+ * email) -- it does not reliably "find the owner of this company"
+ * from a business name alone. For prospects with no website (exactly
+ * the ones the scoring engine rates highest -- see
+ * packages/scoring/src/computeQualification.ts), there's no domain to
+ * match against, so Apollo will often return nothing useful. Treat a
+ * null result as expected, not a bug -- it just means this prospect
+ * needs a phone call or manual lookup instead.
  */
 export class ApolloAdapter implements EnrichmentPort {
   readonly sourceName = "apollo";
@@ -12,13 +22,18 @@ export class ApolloAdapter implements EnrichmentPort {
   constructor(private apiKey: string) {}
 
   async enrich(businessName: string, website?: string) {
-    const res = await fetch("https://api.apollo.io/v1/people/match", {
+    const domain = website ? extractDomain(website) : undefined;
+
+    const res = await fetch("https://api.apollo.io/api/v1/people/match", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": this.apiKey,
+      },
       body: JSON.stringify({
-        api_key: this.apiKey,
         organization_name: businessName,
-        domain: website,
+        domain,
+        reveal_personal_emails: false,
       }),
     });
 
@@ -35,5 +50,16 @@ export class ApolloAdapter implements EnrichmentPort {
       email: data.person.email,
       linkedin: data.person.linkedin_url,
     };
+  }
+}
+
+function extractDomain(website: string): string {
+  try {
+    return new URL(website.startsWith("http") ? website : `https://${website}`).hostname.replace(
+      /^www\./,
+      ""
+    );
+  } catch {
+    return website;
   }
 }
