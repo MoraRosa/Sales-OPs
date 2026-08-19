@@ -5,3 +5,4 @@ dist/
 .firebaserc
 *.log
 .DS_Store
+sa.json

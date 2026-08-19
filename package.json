@@ -13,7 +13,8 @@
   "devDependencies": {
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "dotenv": "^16.4.5"
   },
   "engines": {
     "node": ">=20"

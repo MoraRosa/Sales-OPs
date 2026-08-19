@@ -2,7 +2,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { TABS } from "@peak-empire/sheets-client";
 import { GooglePlacesAdapter, YelpAdapter, ManualEntryAdapter } from "@peak-empire/lead-sourcing";
 import { getSheetsClient } from "../sheetsAuth.js";
-import { config, SHEETS_SECRETS, PLACES_SECRETS, YELP_SECRETS } from "../config.js";
+import { config, SHEETS_SECRETS, PLACES_SECRETS } from "../config.js";
 import { buildExistingKeySet, partitionNew, newProspectId } from "../logic/discovery.js";
 
 /**
@@ -12,7 +12,7 @@ import { buildExistingKeySet, partitionNew, newProspectId } from "../logic/disco
  * Prospects rows by businessName + city, and appends new rows.
  */
 export const discoverProspects = onRequest(
-  { cors: true, secrets: [...SHEETS_SECRETS, ...PLACES_SECRETS, ...YELP_SECRETS] },
+  { cors: true, secrets: [...SHEETS_SECRETS, ...PLACES_SECRETS] },
   async (req, res) => {
   try {
     const { industry, city, region, sources = ["google_places"] } = req.body ?? {};

@@ -11,6 +11,7 @@
  * Safe to re-run -- skips tabs that already exist rather than
  * overwriting them.
  */
+import "dotenv/config";
 import { google } from "googleapis";
 import { TABS, HEADERS } from "../packages/sheets-client/src/schema.js";
 import { SEED_DATA } from "./seedData.js";

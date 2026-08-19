@@ -2,7 +2,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { TABS } from "@peak-empire/sheets-client";
 import { ApolloAdapter } from "@peak-empire/lead-sourcing";
 import { getSheetsClient } from "../sheetsAuth.js";
-import { config, SHEETS_SECRETS, APOLLO_SECRETS } from "../config.js";
+import { config, SHEETS_SECRETS } from "../config.js";
 import { buildEnrichmentPatch } from "../logic/enrichment.js";
 
 /**
@@ -12,7 +12,7 @@ import { buildEnrichmentPatch } from "../logic/enrichment.js";
  * ApolloAdapter's own doc comment for why: Apollo's credit pricing
  * punishes enriching prospects you may never call.
  */
-export const enrichProspect = onRequest({ cors: true, secrets: [...SHEETS_SECRETS, ...APOLLO_SECRETS] }, async (req, res) => {
+export const enrichProspect = onRequest({ cors: true, secrets: [...SHEETS_SECRETS] }, async (req, res) => {
   try {
     const { prospectId } = req.body ?? {};
     if (!prospectId) {

@@ -8,7 +8,7 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm --filter @peak-empire/shared-types --filter @peak-empire/sheets-client --filter @peak-empire/lead-sourcing --filter @peak-empire/scoring run build && tsc",
     "serve": "pnpm build && firebase emulators:start --only functions",
     "deploy": "pnpm build && firebase deploy --only functions",
     "test": "vitest run"
