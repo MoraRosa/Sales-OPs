@@ -152,10 +152,21 @@ function CreateOpportunityForm({ prospectId, onCreated }: { prospectId: string; 
 function ContactInfo({ prospect }: { prospect: Record<string, string> }) {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [manualEmail, setManualEmail] = useState("");
+  const [showManualForm, setShowManualForm] = useState(false);
 
   const enrich = useMutation({
     mutationFn: () => api.enrichProspect(id!),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prospectDetail", id] }),
+  });
+
+  const addManually = useMutation({
+    mutationFn: () => api.updateProspectContact({ prospectId: id!, email: manualEmail }),
+    onSuccess: () => {
+      setManualEmail("");
+      setShowManualForm(false);
+      queryClient.invalidateQueries({ queryKey: ["prospectDetail", id] });
+    },
   });
 
   if (prospect.primaryContactName || prospect.email) {
@@ -168,18 +179,46 @@ function ContactInfo({ prospect }: { prospect: Record<string, string> }) {
     );
   }
 
+  if (showManualForm) {
+    return (
+      <div className="mt-1 flex gap-2">
+        <input
+          className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-xs"
+          placeholder="Email you found by hand"
+          value={manualEmail}
+          onChange={(e) => setManualEmail(e.target.value)}
+        />
+        <button
+          className="text-xs text-emerald-400 underline disabled:opacity-50"
+          disabled={!manualEmail || addManually.isPending}
+          onClick={() => addManually.mutate()}
+        >
+          {addManually.isPending ? "Saving..." : "Save"}
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <button
-      className="mt-1 text-xs text-slate-400 underline hover:text-slate-200 disabled:opacity-50"
-      disabled={enrich.isPending}
-      onClick={() => enrich.mutate()}
-    >
-      {enrich.isPending
-        ? "Looking up contact..."
-        : enrich.data && !enrich.data.found
-          ? "No contact found"
-          : "Find owner contact (Apollo)"}
-    </button>
+    <div className="mt-1 flex gap-3">
+      <button
+        className="text-xs text-slate-400 underline hover:text-slate-200 disabled:opacity-50"
+        disabled={enrich.isPending}
+        onClick={() => enrich.mutate()}
+      >
+        {enrich.isPending
+          ? "Looking up contact..."
+          : enrich.data && !enrich.data.found
+            ? "No contact found"
+            : "Find owner contact (Apollo)"}
+      </button>
+      <button
+        className="text-xs text-slate-400 underline hover:text-slate-200"
+        onClick={() => setShowManualForm(true)}
+      >
+        Add email manually
+      </button>
+    </div>
   );
 }
 

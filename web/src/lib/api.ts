@@ -84,6 +84,14 @@ export const api = {
       prospectId,
     }),
 
+  updateProspectContact: (body: {
+    prospectId: string;
+    email?: string;
+    phone?: string;
+    primaryContactName?: string;
+    primaryContactRole?: string;
+  }) => post<{ ok: true }>("updateProspectContact", body),
+
   getEmailTemplates: () => get<{ templates: Record<string, string>[] }>("emailTemplates"),
 
   sendColdEmail: (body: { prospectId: string; subject: string; body: string }) =>

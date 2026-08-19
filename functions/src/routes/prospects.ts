@@ -38,3 +38,47 @@ export const prospectDetail = onRequest({ cors: true, secrets: [...SHEETS_SECRET
     res.status(500).json({ error: "Could not load prospect detail" });
   }
 });
+
+/**
+ * POST /updateProspectContact
+ * body: { prospectId, email?, phone?, primaryContactName?, primaryContactRole? }
+ * Manual, free way to add contact info Google Places/Yelp don't return
+ * -- e.g. an email you found on the business's website by hand. Only
+ * patches fields actually provided, same pattern as enrichProspect's
+ * Apollo path but entirely manual and requires no paid API.
+ */
+export const updateProspectContact = onRequest(
+  { cors: true, secrets: [...SHEETS_SECRETS] },
+  async (req, res) => {
+    try {
+      const { prospectId, email, phone, primaryContactName, primaryContactRole } = req.body ?? {};
+      if (!prospectId) {
+        res.status(400).json({ error: "prospectId is required" });
+        return;
+      }
+
+      const patch: Record<string, string> = {};
+      if (email) patch.email = email;
+      if (phone) patch.phone = phone;
+      if (primaryContactName) patch.primaryContactName = primaryContactName;
+      if (primaryContactRole) patch.primaryContactRole = primaryContactRole;
+
+      if (Object.keys(patch).length === 0) {
+        res.status(400).json({ error: "Provide at least one of email, phone, primaryContactName, primaryContactRole" });
+        return;
+      }
+
+      const sheets = getSheetsClient();
+      const updated = await sheets.updateRow(TABS.PROSPECTS, "id", prospectId, patch);
+      if (!updated) {
+        res.status(404).json({ error: "Prospect not found" });
+        return;
+      }
+
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[updateProspectContact]", err);
+      res.status(500).json({ error: "Could not update contact info" });
+    }
+  }
+);
