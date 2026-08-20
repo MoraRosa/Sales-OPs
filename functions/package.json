@@ -8,7 +8,9 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "build": "pnpm --filter @peak-empire/shared-types --filter @peak-empire/sheets-client --filter @peak-empire/lead-sourcing --filter @peak-empire/scoring run build && tsc",
+    "build": "pnpm --filter @peak-empire/shared-types --filter @peak-empire/sheets-client --filter @peak-empire/lead-sourcing --filter @peak-empire/scoring run build && pnpm run typecheck && pnpm run bundle && node scripts/write-deploy-package.mjs",
+    "typecheck": "tsc --noEmit",
+    "bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --external:firebase-admin --external:firebase-admin/* --external:firebase-functions --external:firebase-functions/* --external:googleapis --external:googleapis/*",
     "serve": "pnpm build && firebase emulators:start --only functions",
     "deploy": "pnpm build && firebase deploy --only functions",
     "test": "vitest run"
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "esbuild": "^0.24.0"
   }
 }

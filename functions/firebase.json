@@ -1,6 +1,6 @@
 {
   "functions": {
-    "source": ".",
+    "source": "dist",
     "runtime": "nodejs20"
   },
   "emulators": {
