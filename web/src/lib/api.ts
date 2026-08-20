@@ -2,11 +2,22 @@
  * Thin fetch wrapper over the Firebase Functions HTTP endpoints. This
  * is the ONLY file the app's UI code needs to touch if the backend
  * URL, auth scheme, or hosting provider ever changes.
+ *
+ * Each 2nd-gen Firebase Function deploys to its OWN Cloud Run URL --
+ * https://<functionname>-<HOST>, all sharing the same host suffix
+ * within one project/region (e.g. "srenoob6pa-uc.a.run.app"). There is
+ * no single shared base URL; VITE_FUNCTIONS_HOST is just that suffix.
  */
-const FUNCTIONS_BASE_URL = import.meta.env.VITE_FUNCTIONS_BASE_URL as string;
+const FUNCTIONS_HOST = import.meta.env.VITE_FUNCTIONS_HOST as string;
+
+function functionUrl(nameWithQuery: string): string {
+  const [name, query] = nameWithQuery.split("?");
+  const url = `https://${name.toLowerCase()}-${FUNCTIONS_HOST}`;
+  return query ? `${url}?${query}` : url;
+}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${FUNCTIONS_BASE_URL}/${path}`, {
+  const res = await fetch(functionUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -16,7 +27,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${FUNCTIONS_BASE_URL}/${path}`);
+  const res = await fetch(functionUrl(path));
   if (!res.ok) throw new Error(`${path} failed: ${res.status}`);
   return res.json();
 }

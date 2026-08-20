@@ -39,7 +39,7 @@ jobs:
       - name: Build web
         run: pnpm --filter @peak-empire/web build
         env:
-          VITE_FUNCTIONS_BASE_URL: ${{ secrets.VITE_FUNCTIONS_BASE_URL }}
+          VITE_FUNCTIONS_HOST: ${{ secrets.VITE_FUNCTIONS_HOST }}
 
       - uses: actions/upload-pages-artifact@v3
         with:
